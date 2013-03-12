@@ -1,0 +1,115 @@
+<script>
+	$(document).ready(function(){
+		$("#updateme").click(function(){
+			window.updateSlides();
+		});
+		window.updateSlides();
+	});
+	function updateSlides(){
+		$("#slideImages").html("");
+		devSlides = $("#SlideList li");
+		TimeCursor = 0;
+		TotalTime = 0;
+
+		canvas = document.getElementById("drawme");
+		context = canvas.getContext("2d");
+		
+		devSlides.each(function(k,v){
+			v = $( devSlides[k] );
+			SlideTimeTotal = v.find('.form_wait').val();
+			TotalTime += Math.round( SlideTimeTotal );
+		});
+
+		devSlides.each(function(k,v){
+			v = $( devSlides[k] );
+			SlideTimeTotal = v.find('.form_wait').val();
+
+
+			// Do countdown stuff
+			for (SlideTimeCursor = 0; SlideTimeCursor < SlideTimeTotal; SlideTimeCursor++){
+				context.clearRect(0, 0,480,270);
+
+				slide_title = v.find('.form_name').val();
+				slide_body = v.find('.form_body').val();
+
+				//Black BG
+				context.fillStyle="#000000";
+				context.fillRect(0,0,480,270);
+
+				context.fillStyle = '#ffffff';
+				// Title
+				context.font = "bold 28px Arial";
+				context.fillText(slide_title, 10, 40);
+
+				// Notes
+				context.font = "bold 20px Arial";
+				context.fillText(slide_body, 30, 90);
+
+			// Next Slide?
+				loltimeleft = SlideTimeTotal - SlideTimeCursor;
+				if( devSlides[k+1] ){
+					nextSlideTitle = $(devSlides[k+1]).find('.form_name').val();
+					context.font = "normal 20px Arial";
+					context.fillText("Next up: \""+nextSlideTitle+"\" in "+loltimeleft+"s", 10, 230);
+				}else{
+					context.font = "normal 20px Arial";
+					context.fillText("Wrap it up -- "+loltimeleft+"s", 10, 230);
+				}
+
+				// Time left?
+				context.font = "bold 20px Arial";
+				context.fillText( (TotalTime - TimeCursor)+"s Left", 380, 250);
+
+				var canvas = document.getElementById("drawme");
+				var img    = canvas.toDataURL("image/png");
+				
+				$("#slideImages").append("<div id='TimeSlide"+TimeCursor+"' class='TimeSlides' style='float:left;padding-bottom:3px;'> <img src='" + img + "' style='display:block;'><input type='hidden' name='genSlides[]' value='" + img + "'></div>");
+
+				// Up the overall time
+				TimeCursor++;
+			}
+		});
+	}
+</script>
+<h1>Slides</h1>
+<form method="post" action="/slides">
+<div id="slides">
+	<div style="width:300px;border-right:1px solid #000;padding-right:10px;margin-right:10px;float:left;">
+			<ul id="SlideList">
+				<li>
+					<input type="text" name="name[]" class="form_name" value="Introduction!">&nbsp;&nbsp;for 
+					<input type="text" name="wait[]" class="form_wait" size="4" value="5"> seconds<br>
+					<textarea name="body" class="form_body" style="width:260px;height:40px">OK, man up and do your presentation</textarea><br><br>
+				</li>
+				<li>
+					<input type="text" name="name[]" class="form_name" value="Teleprompt">&nbsp;&nbsp;for 
+					<input type="text" name="wait[]" class="form_wait" size="4" value="5"> seconds<br>
+					<textarea name="body" class="form_body" style="width:260px;height:40px">I help you remember your talking points!</textarea><br><br>
+				</li>
+				<li>
+					<input type="text" name="name[]" class="form_name" value="Zap = Lightning Talks">&nbsp;&nbsp;for 
+					<input type="text" name="wait[]" class="form_wait" size="4" value="7"> seconds<br>
+					<textarea name="body" class="form_body" style="width:260px;height:40px">Shocking, I know.</textarea><br><br>
+				</li>
+				<li>
+					<input type="text" name="name[]" class="form_name" value="Ok, Wrap it up">&nbsp;&nbsp;for 
+					<input type="text" name="wait[]" class="form_wait" size="4" value="5"> seconds<br>
+					<textarea name="body" class="form_body" style="width:260px;height:40px">Is that guy back there sleeping?</textarea><br><br>
+				</li>
+			</ul>
+			<input id="updateme" type="button" value="Update Slides"><br><Br>
+			<input type="submit" value="Finish">
+		
+	</div>
+	<div style="float:left;width:480px;">
+		<div id="mp4_status" style="border-bottom:1px solid #000;margin-bottom:5px;padding-bottom:5px;">Transcoding status: Inactive</div>
+		<div style="display:none;"><canvas id="drawme" width="480" height="270"></canvas></div>
+		<div id="slideImages" style="height:270px;width:480px;overflow-x:scroll;background:#eee;"></div>
+		<div id="slidePages" style="height:30px;margin-top:10px;"></div>
+	</div>
+
+	<div style="clear:both;"></div>
+</div>
+</form>
+<h1>Export</h1>
+<div style="height:100px;width:300px;background:#eee;">Generated video Url: <input type="text"> <br><input type="button" value="Send"></div>
